@@ -26,24 +26,9 @@ services:
      "--resources-path", "/components",
      "--config", "/configuration/configuration.yaml"]
     volumes:
-      - ./configuration/:/configuration
-      - ./components/:/components
+      - ./compose/configuration/:/configuration
+      - ./compose/components/:/components
     network_mode: service:queueprocessor
-
-  dapr-dashboard:
-    image: "daprio/dashboard:latest"
-    command: [ "--docker-compose=true",
-      "--components-path=/home/nonroot/components",
-      "--config-path=/home/nonroot/configuration",
-      "--docker-compose-path=/home/nonroot/docker-compose.yaml" ]
-    ports:
-      - "8080:8080"
-    volumes:
-      - "./components/:/home/nonroot/components"
-      - "./configuration/:/home/nonroot/configuration"
-      - ./docker-compose.yaml:/home/nonroot/docker-compose.yaml
-    networks:
-      - dapr-trial
 
   redis:
     image: redis:alpine
@@ -51,15 +36,6 @@ services:
       - 6379:6379
     networks:
       - dapr-trial
-
-  jaeger:
-    image: jaegertracing/all-in-one:1
-    ports:
-      - 16686:16686
-      - 4317:4317 # OtlpgRPC
-      - 4318:4318 # OtlpHttp
-    environment:
-      COLLECTOR_OTLP_ENABLED: true
 
 networks:
   dapr-trial:

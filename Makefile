@@ -1,4 +1,4 @@
-DOCKER_COMPOSE:=docker compose
+DOCKER_COMPOSE:=docker compose --file docker-compose.yaml --file compose/dapr-docker-compose.yaml
 PUBSUB_NAME:=pubsub
 TOPIC_NAME:=counter
 PAYLOAD:=3
