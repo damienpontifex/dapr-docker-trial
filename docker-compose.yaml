@@ -25,16 +25,36 @@ services:
      "--app-id", "queueprocessor",
      "--app-port", "5000",
      "--placement-host-address", "placement:50006",
-     "--resources-path", "/components"]
+     "--resources-path", "/components",
+     "--config", "/configuration/configuration.yaml"]
     volumes:
+      - ./configuration/:/configuration
       - ./components/:/components
     network_mode: service:queueprocessor
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: jaeger:4317
+      OTEL_EXPORTER_OTLP_INSECURE: "true"
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
 
   placement:
     image: daprio/dapr
     command: ["./placement", "-port", "50006"]
     ports:
       - 50006:50006
+    networks:
+      - dapr-trial
+  dapr-dashboard:
+    image: "daprio/dashboard:latest"
+    command: [ "--docker-compose=true",
+      "--components-path=/home/nonroot/components",
+      "--config-path=/home/nonroot/configuration",
+      "--docker-compose-path=/home/nonroot/docker-compose.yaml" ]
+    ports:
+      - "8080:8080"
+    volumes:
+      - "./components/:/home/nonroot/components"
+      - "./configuration/:/home/nonroot/configuration"
+      - ./docker-compose.yaml:/home/nonroot/docker-compose.yaml
     networks:
       - dapr-trial
 
@@ -44,6 +64,15 @@ services:
       - 6379:6379
     networks:
       - dapr-trial
+
+  jaeger:
+    image: jaegertracing/all-in-one:1
+    ports:
+      - 16686:16686
+      - 4317:4317 # OtlpgRPC
+      - 4318:4318 # OtlpHttp
+    environment:
+      COLLECTOR_OTLP_ENABLED: true
 
 networks:
   dapr-trial:
